@@ -63,7 +63,6 @@ check_desc_flank:
 	rjmp 	main_loop
 
 blink_led:
-	
 	sbis 	LED_PORT, LED_PIN
 	rjmp 	wait_asc_flank
 	rcall 	delay_1s
@@ -74,11 +73,12 @@ blink_led:
 	rcall	turn_led_on
 	rjmp 	check_desc_flank
 
-	; sbic	PUL1_PORT_IN, PUL1_PIN
-    ; sbi     LED_PORT,LED_PIN //si el pulsador uno esta en 1, quiero encender el led
-	; sbic	PUL2_PORT_IN, PUL2_PIN //si el pulsador uno esta en 0, salteo la instruccion y chequeo el 2
-    ; cbi     LED_PORT,LED_PIN //si esta en uno, no skipeo y apago el led
-	; rjmp	main_loop
+; sbic	PUL1_PORT_IN, PUL1_PIN
+; sbi     LED_PORT,LED_PIN //si el pulsador uno esta en 1, quiero encender el led
+; sbic	PUL2_PORT_IN, PUL2_PIN //si el pulsador uno esta en 0, 
+; salteo la instruccion y chequeo el 2
+; cbi     LED_PORT,LED_PIN //si esta en uno, no skipeo y apago el led
+; rjmp	main_loop
 
 
 ;*************************************************************************************
@@ -94,10 +94,10 @@ blink_led:
 
 configure_ports:
 	ldi     r20,0xFF
-    out     LED_PORT_DIR,r20
-    out     LED_PORT,r20
+	out     LED_PORT_DIR,r20
+	out     LED_PORT,r20
 	sbi 	PUL2_PIN_PULL_DOWN, PUL2_PIN ; Prendo la resistencia de pull-down
-    cbi     PUL2_PORT_DIR,PUL2_PIN
+	cbi     PUL2_PORT_DIR,PUL2_PIN
 	cbi     PUL1_PORT_DIR,PUL1_PIN
 	ret
 
@@ -119,13 +119,15 @@ turn_led_off:
 
 ;*************************************************************************************
 ; Retardo de 5ms (Calculado con un cristal de 16MHz)
-; Si ocurren x ciclos de clock, el tiempo que transcurre es t = x/F siendo F la frecuencia
+; Si ocurren x ciclos de clock, el tiempo que transcurre es:
+; t = x/F siendo F la frecuencia
 ; del clock, en este caso 16MHz. Entonces x = t*F
 ; y, particularmente con t=5ms, entonces x = 5e-3*16e6 = 80000
 ; Entonces, necesito 80k clocks
 ; Para eso, planteo dos ciclos.
 ; En el loop_2(interno) realizo un dec de un clock y un brne de 2
-; En el loop_1 realizo: ldi de un clock, dec de un clok y brne de dos clocks(con la salvedad de que el ultimo es de uno)
+; En el loop_1 realizo: ldi de un clock, dec de un clok y brne de dos clocks
+; (con la salvedad de que el ultimo es de uno)
 ; Entonces, siendo m la cantidad de veces que se realiza el loop 2
 ; y n la cantidad de veces que se realiza el loop 1, queda:
 ; 80000 = 3*m*n + 4*m
@@ -148,11 +150,13 @@ loop_2:
 ;*************************************************************************************
 ; Retardo de 1s (Calculado con un cristal de 16MHz)
 ; 
-;Como se explico en el caso anterior para dos ciclos, el tiempo es:
-; t = (3m+4)*n/16MHz con m y n la cantidad de loops, el maximo tiempo que se puede conseguir es:
+; Como se explico en el caso anterior para dos ciclos, el tiempo es:
+; t = (3m+4)*n/16MHz con m y n la cantidad de loops, 
+; el maximo tiempo que se puede conseguir es:
 ; t =  (3*256+4)*256/16MHz = 12,3 ms, como se necesita mas tiempo(1s)
 ; se agrega un tercer ciclo, y siguiendo la misma logica:
-;t*f = [(3*m + 4)*n +1+2+1]*p, siendo m la cantidad de veces que se ejecuta el ciclo mas interno, n el intermedio,
+; t*f = [(3*m + 4)*n +1+2+1]*p, 
+; siendo m la cantidad de veces que se ejecuta el ciclo mas interno, n el intermedio,
 ; y p el mas externo,
 ;asi: p = t*f/[5*m*n + 4*n + 4]
 ; y dandole a m y n los valores 256, p debe valer 49					
