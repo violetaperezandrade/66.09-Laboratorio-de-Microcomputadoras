@@ -71,14 +71,7 @@ blink_led:
 	rcall	delay_1s
 
 	rcall	turn_led_on
-	rjmp 	check_desc_flank
-
-; sbic	PUL1_PORT_IN, PUL1_PIN
-; sbi     LED_PORT,LED_PIN //si el pulsador uno esta en 1, quiero encender el led
-; sbic	PUL2_PORT_IN, PUL2_PIN //si el pulsador uno esta en 0, 
-; salteo la instruccion y chequeo el 2
-; cbi     LED_PORT,LED_PIN //si esta en uno, no skipeo y apago el led
-; rjmp	main_loop
+	rjmp 	check_desc_flan
 
 
 ;*************************************************************************************

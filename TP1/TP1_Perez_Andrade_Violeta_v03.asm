@@ -104,10 +104,10 @@ configure_ports:
 	ldi 	LED_STATUS, 0x00 				; Cargo en el registro LED_STATE (r17) con 0x00
 	out 	DDRD, r20 						; Cargo un cero en todos los bits del DDRD
 	out 	DDRB, r20 						; Cargo un cero en todos los bits del DDRB
-	sbi 	DDRD, LED_PIN 				; Configuro al puerto del led como output
+	sbi 	DDRD, LED_PIN 					; Configuro al puerto del led como output
 	out 	LED_PORT, r20 					; Cargo un cero en todos los bits del PORTD
 	out 	PORTB, r20						; Cargo un cero en todos los bits del PORTB
-	sbi 	PORTD, PUL2_PIN ; Enciendo la resistencia de Pull-up, PORTD7 = 1
+	sbi 	PORTD, PUL2_PIN 				; Enciendo la resistencia de Pull-up, PORTD7 = 1
 	ret
 
 ;*************************************************************************************
