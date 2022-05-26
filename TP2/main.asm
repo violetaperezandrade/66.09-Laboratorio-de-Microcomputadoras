@@ -29,6 +29,10 @@ table_ok:
 	ldi		r18, 0x5
 	ldi		r17, 0xF
 	rcall	configure_ports
+	ldi		xl, 0xA
+	ldi		xh, 0x0
+	rcall	read_eeprom
+	mov		r17, r20
 	rcall display_number
 	here:	jmp here
 
@@ -45,7 +49,6 @@ check_signature:
 	ldi		xl, 0x0
 	ldi		xh, 0x0
 	rcall	read_eeprom ;X y r20
-	;cpi		r20, 0x20
 	cpse	r20, r17
 	dec		r19
 	inc		xl
@@ -60,6 +63,87 @@ check_signature:
 	pop	r17
 	ret
 
+load_table_in_eeprom:
+;tabla “0,2,4,6,8,A,C,E,F,D,B,9,7,5,3,1,0,F,0,A,8"
+	ldi		xl, 0x0
+	ldi		xh, 0x0
+	ldi		r20, 0x20
+	rcall	write_eeprom ;r20
+	inc		xl
+	ldi		r20, 0x21
+	rcall	write_eeprom
+	inc		xl
+	ldi		r20, 0x0
+	rcall	write_eeprom
+	inc		xl
+	ldi		r20, 0x2
+	rcall	write_eeprom
+	inc		xl
+	ldi		r20, 0x4
+	rcall	write_eeprom
+	inc		xl
+	ldi		r20, 0x6
+	rcall	write_eeprom
+	inc		xl
+	ldi		r20, 0x8
+	rcall	write_eeprom
+	inc		xl
+	ldi		r20, 0xA
+	rcall	write_eeprom
+	inc		xl
+	ldi		r20, 0xC
+	rcall	write_eeprom
+	inc		xl
+	ldi		r20, 0xE
+	rcall	write_eeprom
+	inc		xl
+	ldi		r20, 0xF
+	rcall	write_eeprom
+	inc		xl
+	ldi		r20, 0xD
+	rcall	write_eeprom
+	inc		xl
+	ldi		r20, 0xB
+	rcall	write_eeprom
+	inc		xl
+	ldi		r20, 0x9
+	rcall	write_eeprom
+	inc		xl
+	ldi		r20, 0x7
+	rcall	write_eeprom
+	inc		xl
+	ldi		r20, 0x5
+	rcall	write_eeprom
+	inc		xl
+	ldi		r20, 0x3
+	rcall	write_eeprom
+	inc		xl
+	ldi		r20, 0x1
+	rcall	write_eeprom
+	inc		xl
+	ldi		r20, 0x0
+	rcall	write_eeprom
+	inc		xl
+	ldi		r20, 0xF
+	rcall	write_eeprom
+	inc		xl
+	ldi		r20, 0x0
+	rcall	write_eeprom
+	inc		xl
+	ldi		r20, 0xA
+	rcall	write_eeprom
+	inc		xl
+	ldi		r20, 0x8
+	rcall	write_eeprom
+	ret
+
+configure_ports:
+	push r20
+	ldi	r20, 0xFF
+	out	DDRC, r20
+	out	DDRB, r20
+	pop r20
+	ret
 
 display_number:
 	push r4
@@ -92,16 +176,6 @@ display_number:
 	pop r4
 	ret
 
-configure_ports:
-	push r20
-	ldi	r20, 0xFF
-	out	DDRC, r20
-	out	DDRB, r20
-	pop r20
-	ret
-
-load_table_in_eeprom:
-	ret
 
 read_eeprom:
 	; Wait for completion of previous write
@@ -131,7 +205,6 @@ write_eeprom:
 	sbi EECR,EEPE
 	ret
 
-	.ORG $500
 TABLA:	.DB	243, \
 			96, \
 			181, \
