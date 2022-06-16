@@ -1,6 +1,6 @@
 ;
 ; TP2b.asm
-; Author : Violeta
+; Author : Violeta Perez Andrade 101456
 ;
 
 
@@ -31,11 +31,17 @@ main_loop:
 	rcall	load_table_in_eeprom
 table_ok:
 	rcall	configure_ports
-	//rcall   display_a_to_f
+	rcall   display_a_to_f
 	rcall   display_last
 	rcall	configurar_interrupciones
 	sei
 	here:	jmp here
+
+;*************************************************************************************
+; Subrutina que chequea la firma
+; para saber si la tabla esta cargada en la EEPROM
+; Registros utilizados: r17, r18, r19, r20
+;**************************************************************************************
 
 check_signature:
 	push	r17
@@ -66,6 +72,12 @@ check_signature:
 		pop	r18
 		pop	r17
 		ret
+
+;*************************************************************************************
+; Subrutina para cargar la tabla de datos en
+; la memoria EEPROM
+; registros utilizados: r19, r20, r21
+;**************************************************************************************
 
 load_table_in_eeprom:
 	push r21
@@ -108,6 +120,12 @@ load_table_in_eeprom:
 	pop r21
 	ret
 
+;*************************************************************************************
+; Subrutina para configurar los puertos de los pulsadores
+; y del display
+; registros utilizados: r20, r21
+;**************************************************************************************
+
 configure_ports:
 	push r20
 	push r21
@@ -119,6 +137,12 @@ configure_ports:
 	pop r21
 	pop r20
 	ret
+
+;*************************************************************************************
+; Subrutina para mostras, al comienzo del programa
+; la secuencia de la A a la F
+; registros utilizados: r17, r18, r19
+;**************************************************************************************
 
 display_a_to_f:
 	push r17
@@ -165,6 +189,12 @@ display_a_to_f:
 	//rcall display_number
 	//rcall delay_1s
 
+;*************************************************************************************
+; Subrutina para mostrar en el display el ultimo numero
+; que fue mostrado antes de que se apague el micro
+; registros utilizados: r17, r20
+;**************************************************************************************
+
 display_last:
 	ldi		xl, 0x17 ;pos de LP
 	ldi		xh, 0x0
@@ -175,6 +205,10 @@ display_last:
 	rcall display_number
 	ret
 
+;*************************************************************************************
+; Subrutina para configurar las interrupciones
+; registros utilizados: r16
+;**************************************************************************************
 
 configurar_interrupciones:
 	; INT0 e INT1 responden al flanco ascendente
@@ -184,6 +218,12 @@ configurar_interrupciones:
 	ldi r16, (1 << INT1) | (1 << INT0)
 	out EIMSK, r16
 	ret
+
+;*************************************************************************************
+; Subrutina para, dado un numero, mostrar
+; este en el display de 7 segmentos
+; registros utilizados: r17, r18, r4
+;**************************************************************************************
 
 display_number:
 	push r4
@@ -212,6 +252,12 @@ display_number:
 	pop r4
 	ret
 
+;*************************************************************************************
+; Subrutina para poder leer un dato de una posicion
+; dada de la memoria EEPROM
+; registros utilizados: r20
+;**************************************************************************************
+
 read_eeprom:
 	; Wait for completion of previous write
 	sbic EECR,EEPE
@@ -224,6 +270,12 @@ read_eeprom:
 	; Read data from Data Register
 	in r20,EEDR
 	ret
+
+;*************************************************************************************
+; Subrutina para poder escribir un dato de una posicion
+; dada en la memoria EEPROM
+; registros utilizados: r20
+;**************************************************************************************
 
 write_eeprom:
 	; Wait for completion of previous write
@@ -239,6 +291,12 @@ write_eeprom:
 	; Start eeprom write by setting EEPE
 	sbi EECR,EEPE
 	ret
+
+;*************************************************************************************
+; Subrutina para que al presionar el pulsador
+; se avance en la tabla
+; registros utilizados: r17, r21, r22, r24,
+;**************************************************************************************
 
 isr_int0: ; Pulsador 1
 	push	r24
@@ -265,6 +323,12 @@ draw_isr_int0:
 	ldi	xl, 0x17
 	mov	r20, r21
 	rcall write_eeprom
+
+;*************************************************************************************
+; Subrutina para que al presionar el pulsador
+; se retroceda en la tabla
+; registros utilizados: r17, r21, r22, r24,
+;**************************************************************************************
 
 isr_int0_fin:
 	out SREG, r24  ; Restaurar registro de estado
@@ -367,29 +431,5 @@ TABLA:	.DB	243, \
 			23 
 
 TABLA_EEPROM: .DB 0,2,4,6,8,0xA,0xC,0xE,0xF,0xD,0xB,9,7,5,3,1,0,0xF,0,0xA,8,2,20,21
-
+.ORG $500
 DIC: .DB 0xA,0xB,0xC,0xD,0xE,0xF
-//DIC: .DB 0xA
-//DIC_1: .DB 0xB
-//DIC_2: .DB 0xC
-//DIC_3: .DB 0xD
-//DIC_4: .DB 0xAE
-//DIC_5: .DB 0xF
-
-;DATA_0:	.DB 0b11110011
-;DATA_1:	.DB 0b01100000
-;DATA_2:	.DB 0b10110001
-;DATA_3:	.DB 0b11110100
-;DATA_4:	.DB	0b01100110
-;DATA_5:	.DB	0b11010110
-;DATA_6:	.DB	0b11010111
-;DATA_7:	.DB	0b01110100
-;DATA_8:	.DB	0b11110111
-;DATA_9:	.DB	0b11110110
-;DATA_A:	.DB	0b01110111
-;DATA_B:	.DB	0b11110111
-;DATA_C:	.DB	0b10010011
-;DATA_D:	.DB	0b11110011
-;DATA_E:	.DB	0b10010111
-;DATA_F:	.DB	0b00010111
-
