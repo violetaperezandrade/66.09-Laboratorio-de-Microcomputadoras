@@ -31,8 +31,8 @@ main_loop:
 	rcall	load_table_in_eeprom
 table_ok:
 	rcall	configure_ports
-	rcall   display_a_to_f
-	//rcall   display_last
+	//rcall   display_a_to_f
+	rcall   display_last
 	rcall	configurar_interrupciones
 	sei
 	here:	jmp here
@@ -71,10 +71,10 @@ load_table_in_eeprom:
 	push r21
 	push r20
 	push r19
-	ldi	xl, 0x0
+	ldi	xl, 0x2
 	ldi	xh, 0x0
-	ldi	yl,LOW(TABLA_EEPROM<<1)
-	ldi	yh,HIGH(TABLA_EEPROM<<1)
+	ldi	zl,LOW(TABLA_EEPROM<<1)
+	ldi	zh,HIGH(TABLA_EEPROM<<1)
 	ldi	r21, 22
 	
 	loop_load_table:
@@ -85,11 +85,12 @@ load_table_in_eeprom:
 		add	xl, r19
 		adc xh, r0
 		clr	r0
-		add	yl, r19
-		adc yh, r0
+		add	zl, r19
+		adc zh, r0
 		dec r21
 		brne loop_load_table
-
+	ldi	xl, 0x0
+	ldi	xh, 0x0
 	ldi	r20, 0x20
 	rcall write_eeprom ;r20
 	clr	r0
@@ -123,52 +124,52 @@ display_a_to_f:
 	push r17
 	push r18
 	push r19
-	ldi	xl,LOW(DIC<<1)
-	ldi	xh,HIGH(DIC<<1)
-	lpm	r17,z
+	ldi	zl,LOW(DIC<<1)
+	ldi	zh,HIGH(DIC<<1)
 	ldi	r18, 6
 
-	ldi r17, 0xA
+	loop_display_af:
+	lpm	r17,z
 	rcall display_number
 	rcall delay_1s
-	ldi r17, 0xB
-	rcall display_number
-	rcall delay_1s
-	ldi r17, 0xC
-	rcall display_number
-	rcall delay_1s
-	ldi r17, 0xC
-	rcall display_number
-	rcall delay_1s
-	ldi r17, 0xD
-	rcall display_number
-	rcall delay_1s
-	ldi r17, 0xE
-	rcall display_number
-	rcall delay_1s
-	ldi r17, 0xF
-	rcall display_number
-	rcall delay_1s
-
-	//loop_display_af:
-	//rcall display_number
-	//rcall delay_1s
-	//clr	r0
-	//ldi	r19, 1
-	//add	xl, r19
-	//adc xh, r0
-	//lpm	r17,z
-	//dec r18
-	//brne loop_display_af
+	clr	r0
+	ldi	r19, 1
+	add	zl, r19
+	adc zh, r0
+	dec r18
+	brne loop_display_af
 
 	pop r19
 	pop r18
 	pop r17
 	ret
+	//ldi r17, 0xA
+	//rcall display_number
+	//rcall delay_1s
+	//ldi r17, 0xB
+	//rcall display_number
+	//rcall delay_1s
+	//ldi r17, 0xC
+	//rcall display_number
+	//rcall delay_1s
+	//ldi r17, 0xC
+	//rcall display_number
+	//rcall delay_1s
+	//ldi r17, 0xD
+	//rcall display_number
+	//rcall delay_1s
+	//ldi r17, 0xE
+	//rcall display_number
+	//rcall delay_1s
+	//ldi r17, 0xF
+	//rcall display_number
+	//rcall delay_1s
 
 display_last:
 	ldi		xl, 0x17 ;pos de LP
 	ldi		xh, 0x0
+	rcall	read_eeprom
+	mov	xl, r20 ;cargo en xl el indice del dato que quiero dibujar
 	rcall	read_eeprom
 	mov	r17, r20
 	rcall display_number
@@ -367,7 +368,7 @@ TABLA:	.DB	243, \
 
 TABLA_EEPROM: .DB 0,2,4,6,8,0xA,0xC,0xE,0xF,0xD,0xB,9,7,5,3,1,0,0xF,0,0xA,8,2,20,21
 
-DIC: .DB 0b00001010, 0b00001011, 0b00001100, 0b00001101, 0b00001110, 0b00001110
+DIC: .DB 0xA,0xB,0xC,0xD,0xE,0xF
 //DIC: .DB 0xA
 //DIC_1: .DB 0xB
 //DIC_2: .DB 0xC
