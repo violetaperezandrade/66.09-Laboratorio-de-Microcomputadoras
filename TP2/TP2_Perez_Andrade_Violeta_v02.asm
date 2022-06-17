@@ -229,6 +229,8 @@ display_number:
 	push r4
 	push r18
 	push r17
+	push zl
+	push zh
 
 	ldi	zl,LOW(TABLA<<1)	;ZL = 0x00 (low byte of address)
 	ldi	zh,HIGH(TABLA<<1)	;ZH = 0x05 (high byte of address)
@@ -247,6 +249,8 @@ display_number:
 	out	PORTB, r4
 	out PORTC, r18
 
+	pop zh
+	pop zl
 	pop r17
 	pop r18
 	pop r4
@@ -431,5 +435,4 @@ TABLA:	.DB	243, \
 			23 
 
 TABLA_EEPROM: .DB 0,2,4,6,8,0xA,0xC,0xE,0xF,0xD,0xB,9,7,5,3,1,0,0xF,0,0xA,8,2,20,21
-.ORG $500
 DIC: .DB 0xA,0xB,0xC,0xD,0xE,0xF
