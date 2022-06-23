@@ -70,7 +70,7 @@ signature_ok:
 	lt
 fin_ckeck_signature:
 	pop	r19	
-pop	r19	
+	pop	r19	
 	pop	r19	
 	pop	r18
 	pop	r17
@@ -156,10 +156,10 @@ loop_display_af:
 	dec r18
 	brne loop_display_af
 
-pop r19
-pop r18
-pop r17
-ret
+	pop r19
+	pop r18
+	pop r17
+	ret
 
 ;*************************************************************************************
 ; Subrutina para mostrar en el display el ultimo numero
@@ -355,9 +355,9 @@ delay50ms:
 	push r18
 	push r17
 	ldi r19, 4
-	loop0:
+loop0:
 	ldi r18, 201
-	loop1:
+loop1:
 	ldi r17, 248
 loop2:
 	nop
@@ -380,19 +380,19 @@ middle_loop:
 	ldi 	r22, 255
 inner_loop:
 	dec 	r22 
-dec 	r22 
+	dec 	r22 
 	dec 	r22 
 	brne	inner_loop 
-brne	inner_loop 
+	brne	inner_loop 
 	brne	inner_loop 
 	dec 	r21		
-dec 	r21		
+	dec 	r21		
 	dec 	r21		
 	brne 	middle_loop		
-brne 	middle_loop		
+	brne 	middle_loop		
 	brne 	middle_loop		
 	dec 	r20					
-dec 	r20					
+	dec 	r20					
 	dec 	r20					
 	brne 	outer_loop
 	ret
