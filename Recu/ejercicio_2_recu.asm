@@ -45,6 +45,8 @@ main:
 here:	jmp here
 
 isr_int:
+	in r24, SREG  ; Guardar registro de estado
+	push	r24
     ;si el contador ya llego a 9, no se puede
     ;incrementar mas entonces salgo
     cpi r17, 9
@@ -55,9 +57,12 @@ isr_int:
     inc r17
     rcall display_number
 fin_isr_int:
+    pop r24
     reti
     
 pc_int:
+	in r24, SREG  ; Guardar registro de estado
+	push	r24
     ;si el contador esta en 0, no se puede
     ;decremntar mas entonces salgo
     cpi r17, 0
@@ -98,6 +103,7 @@ change_pd5:
     rcall display_number
     rjmp fin_pc_int
 fin_pc_int:    
+    pop r24
     reti
 
 configure_ports:
