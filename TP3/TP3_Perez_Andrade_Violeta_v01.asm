@@ -217,7 +217,7 @@ reti_OVF2:
 configure_timer0:
 	push r16
 	ldi r16, (1 << CS02) | (0 << CS01) | (1 << CS00) ;setea el prescaler en 1024
-	out TCCR0B, r16 ;TCCR0B pero asi no funciona
+	out TCCR0B, r16
 	pop r16
 	ret
 
