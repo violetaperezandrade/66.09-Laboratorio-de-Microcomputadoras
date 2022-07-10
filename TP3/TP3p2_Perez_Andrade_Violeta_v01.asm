@@ -72,7 +72,7 @@ configure_ports:
 	;como en los pulsadores estan en el puerto D
 	;es de input
 	out	DDRD, r21
-	;pongo en 1 la resistencia de pulldown
+	;pongo en 1 la resistencia de pullup
 	sbi PORTD, 2
 	sbi PORTD, 3
 	pop r21
@@ -242,7 +242,7 @@ reti_OVF2:
 ;**************************************************************************************
 configurar_interrupciones:
 	push r16
-	; INT0 e INT1 responden al cambio de flanco
+	; INT0 e INT1 responden al flanco descendente
 	ldi r16, (1 << ISC11) | (0 << ISC10) | (1 << ISC01) | (0 << ISC00)
 	sts EICRA, r16
 	; Activar interrupciones para INT0 e INT1
