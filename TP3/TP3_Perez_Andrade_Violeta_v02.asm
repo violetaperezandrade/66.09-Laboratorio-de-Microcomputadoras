@@ -251,13 +251,6 @@ reti_OVF2:
 	pop r24
 	reti
 
-/*configure_timer0:
-	push r16
-	ldi r16, (1 << CS02) | (0 << CS01) | (1 << CS00) ;setea el prescaler en 1024
-	out TCCR0B, r16
-	pop r16
-	ret*/
-
 configure_timer1:
 	push r16
 	ldi r16, (0 << CS12) | (0 << CS11) | (0 << CS10)
@@ -268,15 +261,6 @@ configure_timer1:
 	sts TIFR1, r16
 	pop r16
 	ret
-
-/*configure_timer2:
-	push r16
-	ldi r16, (1 << CS22) | (1 << CS21) | (1 << CS20)
-	sts TCCR2B, r16
-	ldi r16, 1<<TOIE2
-	sts TIMSK2, r16
-	pop r16
-	ret*/
 
 
 
