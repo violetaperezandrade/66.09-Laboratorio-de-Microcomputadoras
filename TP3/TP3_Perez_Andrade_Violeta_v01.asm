@@ -50,51 +50,34 @@ inicio:
 
 
 	rcall configure_ports
-
-	//el registro pul1_status lo voy a usar para salvar
-	//los estados dek pulsador uno
 	in pul1_status, PUL1_PIN
-	//este and es para dejar en uno el bit 2 que es el que me importa
 	andi pul1_status, 0b00000100
-	//shifteo para que el valor me quede al final y sean mas facil las comparaciones
 	lsr pul1_status
 	lsr pul1_status
-
-	//lo mismo para el pulsador dos que ahora es el bit3
-	in pul2_status, PUL2_PIN
+	in pul2_status, PUL1_PIN
 	lsr pul2_status
 	lsr pul2_status
 	lsr pul2_status
-
-	//configuro timers e interrupciones
-	//rcall configure_timer0
+	rcall configure_timer0
 	rcall configure_timer1
-	//rcall configure_timer2
+	rcall configure_timer2
 	rcall configurar_interrupciones
 	rcall handle_led
 	sei
 
 main_loop:
+	;sbis PIND, 2
+	;nop
 	jmp main_loop
 
 isr_int0:
 	in r24, SREG  ; Guardar registro de estado
 	push	r24
 	push r16
-
-	;desactivo la interupcion externa para que no suceda
-	;la interrupcion mientras estoy contando el debounce
 	cbi EIMSK, INT0
-
-	;activo el timer 0 que lo voy a estar usando para contar
-	;el debounce del pulsador uno
-	ldi r16, (1 << CS02) | (0 << CS01) | (1 << CS00) ;setea el prescaler en 1024
-	out TCCR0B, r16
-
-	;activo la interrupcion del timer 0
+	;activar la interrupcion del timer
 	ldi r16, 1<<TOIE0
 	sts TIMSK0, r16
-
 	pop r16
 	pop r24
 	reti
@@ -103,20 +86,10 @@ isr_int1:
 	in r24, SREG  ; Guardar registro de estado
 	push	r24
 	push r16
-
-	;desactivo la interupcion externa para que no suceda
-	;la interrupcion mientras estoy contando el debounce
 	cbi EIMSK, INT1
-
-	;activo el timer2 que lo voy a estar usando para contar
-	;el debounce del pulsador uno
-	ldi r16, (1 << CS22) | (1 << CS21) | (1 << CS20)
-	sts TCCR2B, r16
-
-	;activo la interrupcion del timer 2
+	;activar la interrupcion del timer
 	ldi r16, 1<<TOIE2
 	sts TIMSK2, r16
-
 	pop r16
 	pop r24
 	reti
@@ -124,52 +97,43 @@ isr_int1:
 OVF0:
 	in r24, SREG  ; Guardar registro de estado
 	push	r24
-
 	;chequeo si el counter llego a lo necesario
 	cpi pul1_counter, 3
 	breq OVF0_limit_reached
-
-	;si no llego, simplemente lo incremento y salgo
 	inc pul1_counter
 	rjmp reti_OVF0
-
 OVF0_limit_reached:
-	;en caso que ya haya pasado el tiempo de debounce
-	;limpio el contador
-	clr pul1_counter
-	
-	;paro el timer porque ya no quiero seguir contando
-	clr r0
-	sts TCCR0B, r0
-	
+	;desactivar la interrupcion del timer
+	sts TIMSK0, r0
 	;reactivar interrupcion externa
 	sbi EIMSK, INT0
-
 	;chequear si efectivamente cambio el bit
-	;comparo el valor leido con el que tenia guardado en pul1_status
-	;si los valores son iguales, solamente fue un falso positivo
-	;si no, manejo el cambio y actualizo el estado del pulsador
-
 	in pul1_actual, PUL1_PIN
 	lsr pul1_actual
 	lsr pul1_actual
 	andi pul1_actual, 0b00000001
 	cp pul1_actual, pul1_status
-	breq reti_OVF0
+	breq fin_OVF0
 	mov pul1_status, pul1_actual
 	rcall handle_led
-
+fin_OVF0:
+	;limpio el contador
+	clr pul1_counter
+	;desactivo la interrupcion del timer
+	clr r0
+	sts TIMSK0, r0
+	;reactivo la interrupcion externa
+	sbi EIMSK, INT0
 reti_OVF0:
-	out SREG, r24  ; Restaurar registro de estado
 	pop r24
 	reti
 
 handle_led:
-	;en r25 cargo los estados de los pulsadores
-	;y en base al caso que este steo el prescaler en lo necesario o enciendo el led
 	mov r25, pul2_status
 	lsl r25
 	or r25, pul1_status
+	cpi r25, 0b00000000
+	breq handle_led_00
 	cpi r25, 0b00000001
 	breq handle_led_01
 	cpi r25, 0b00000010
@@ -177,7 +141,7 @@ handle_led:
 	cpi r25, 0b00000011
 	breq handle_led_11
 handle_led_00:
-	;paro el timer uno
+	;desactivo la interrupcion del timer 1
 	clr r0
 	sts TCCR1B, r0
 	;prendo el led
@@ -195,16 +159,13 @@ handle_led_10:
 	rjmp hanlde_led_fin
 handle_led_11:
 	;acitvo el timer 1 con prescaler 1024 (101)
-	ldi r22, (1 << CS12) | (0 << CS11) | (1 << CS10) ;setea el prescaler en 1024
+	ldi r22, (1 << CS12) | (0 << CS11) | (1 << CS10) ;setea el prescaler en 256
 	sts TCCR1B, r22
 	rjmp hanlde_led_fin
 hanlde_led_fin:
 	ret
 
 OVF1:
-	;esta interrupcion prende el led cuando llegue a overflow el timer 1
-	;y el tiempo hasta el overflow va a depender de en cuanto este seteado
-	;el prescaler, que depende de como esten apretados los pulsadores
 	in r24, SREG  ; Guardar registro de estado
 	push	r24
 	sbic LED_PORT, LED_PIN_NUM ;skip if bit is cleared
@@ -218,7 +179,6 @@ OVF1_fin:
 	reti
 
 OVF2:
-	;la misma logica que OVF0 pero para el pulsador 2
 	in r24, SREG  ; Guardar registro de estado
 	push	r24
 	;chequeo si el counter llego a lo necesario
@@ -226,10 +186,7 @@ OVF2:
 	breq OVF2_limit_reached
 	inc pul2_counter
 	rjmp reti_OVF2
-
 OVF2_limit_reached:
-	;limpio el contador
-	clr pul2_counter
 	;desactivar la interrupcion del timer
 	clr r0
 	sts TIMSK2, r0
@@ -242,21 +199,27 @@ OVF2_limit_reached:
 	lsr pul2_actual
 	andi pul2_actual, 0b00000001
 	cp pul2_actual, pul2_status
-	breq reti_OVF2
+	breq fin_OVF2
 	mov pul2_status, pul2_actual
 	rcall handle_led
-	
+fin_OVF2:
+	;limpio el contador
+	clr pul2_counter
+	;desactivo la interrupcion del timer
+	clr r0
+	sts TIMSK2, r0
+	;reactivo la interrupcion externa
+	sbi EIMSK, INT1
 reti_OVF2:
-	out SREG, r24  ; Restaurar registro de estado
 	pop r24
 	reti
 
-/*configure_timer0:
+configure_timer0:
 	push r16
 	ldi r16, (1 << CS02) | (0 << CS01) | (1 << CS00) ;setea el prescaler en 1024
 	out TCCR0B, r16
 	pop r16
-	ret*/
+	ret
 
 configure_timer1:
 	push r16
@@ -269,14 +232,14 @@ configure_timer1:
 	pop r16
 	ret
 
-/*configure_timer2:
+configure_timer2:
 	push r16
 	ldi r16, (1 << CS22) | (1 << CS21) | (1 << CS20)
 	sts TCCR2B, r16
 	ldi r16, 1<<TOIE2
 	sts TIMSK2, r16
 	pop r16
-	ret*/
+	ret
 
 
 
@@ -292,6 +255,10 @@ configurar_interrupciones:
 	; Activar interrupciones para INT0 e INT1
 	ldi r16, (1 << INT1) | (1 << INT0)
 	out EIMSK, r16
+	; habilitar bit de interrupciones
+	;ldi r16, 1 << 7
+	;out SREG, r16
+	;sei
 	pop r16
 	ret
 
