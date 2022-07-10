@@ -34,12 +34,12 @@ start:
     ; --------------------------------------
 
 main:
+    rcall	configure_ports
     clr r17
     in pd4_status, PIND
     andi pd4_status, 0b00010000
     in pd5_status, PIND
     andi pd5_status, 0b00100000
-    rcall	configure_ports
 	rcall	configurar_interrupciones
 	sei
 here:	jmp here
