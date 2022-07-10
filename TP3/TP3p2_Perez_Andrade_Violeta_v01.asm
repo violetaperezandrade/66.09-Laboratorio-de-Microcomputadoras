@@ -1,8 +1,7 @@
 ;
 ; TP3p2.asm
 ;
-; Created: 21/6/2022 16:46:40
-; Author : Violeta
+; Author : Violeta Perez Andrade 101456
 ;
 
 
