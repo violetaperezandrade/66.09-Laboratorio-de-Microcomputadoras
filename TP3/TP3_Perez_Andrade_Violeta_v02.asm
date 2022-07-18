@@ -52,7 +52,7 @@ inicio:
 	rcall configure_ports
 
 	//el registro pul1_status lo voy a usar para salvar
-	//los estados dek pulsador uno
+	//los estados del pulsador uno
 	in pul1_status, PUL1_PIN
 	//este and es para dejar en uno el bit 2 que es el que me importa
 	andi pul1_status, 0b00000100
